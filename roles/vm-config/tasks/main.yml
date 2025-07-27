@@ -40,6 +40,19 @@
     state: present
     key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
 
+# - name: Configure SSH daemon
+#   lineinfile:
+#     path: /etc/ssh/sshd_config
+#     regexp: "{{ item.regexp }}"
+#     line: "{{ item.line }}"
+#     backup: yes
+#   loop:
+#     - { regexp: '^#?PasswordAuthentication', line: 'PasswordAuthentication no' }
+#     - { regexp: '^#?PermitRootLogin', line: 'PermitRootLogin no' }
+#     - { regexp: '^#?PubkeyAuthentication', line: 'PubkeyAuthentication yes' }
+#   notify: restart ssh
+#   when: ansible_os_family == "Debian"
+
 - name: Configure firewall (UFW)
   ufw:
     state: enabled
@@ -49,6 +62,7 @@
     - "22"
     - "80"
     - "443"
+  notify: reload firewall
   when: ansible_os_family == "Debian"
 
 - name: Create application user
