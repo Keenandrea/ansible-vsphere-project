@@ -1,0 +1,39 @@
+---
+# vSphere Connection Details
+vcenter_hostname: "vcenter.example.com"
+vcenter_username: "administrator@vsphere.local"
+vcenter_password: "{{ vault_vcenter_password }}"
+vcenter_datacenter: "Datacenter1"
+vcenter_cluster: "Cluster1"
+vcenter_datastore: "datastore1"
+vcenter_network: "VM Network"
+
+# VM Configuration
+vm_template: "ubuntu-20.04-template"
+vm_folder: "/vm"
+vm_resource_pool: "Resources"
+
+# VM Specifications
+vms:
+  - name: "web-server-01"
+    cpu: 2
+    memory: 4096
+    disk_size: 40
+    network: "{{ vcenter_network }}"
+    ip: "192.168.1.100"
+    gateway: "192.168.1.1"
+    dns: ["8.8.8.8", "8.8.4.4"]
+  
+  - name: "db-server-01"
+    cpu: 4
+    memory: 8192
+    disk_size: 100
+    network: "{{ vcenter_network }}"
+    ip: "192.168.1.101"
+    gateway: "192.168.1.1"
+    dns: ["8.8.8.8", "8.8.4.4"]
+
+# Terraform Configuration
+terraform_binary_path: "/usr/local/bin/terraform"
+terraform_workspace: "vsphere"
+terraform_state_backend: "local"
