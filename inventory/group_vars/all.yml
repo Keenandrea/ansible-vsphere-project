@@ -23,6 +23,8 @@ vms:
     ip: "192.168.1.100"
     gateway: "192.168.1.1"
     dns: ["8.8.8.8", "8.8.4.4"]
+    os_type: "linux"
+    template: "{{ vm_template }}"
   
   - name: "db-server-01"
     cpu: 4
@@ -32,8 +34,27 @@ vms:
     ip: "192.168.1.101"
     gateway: "192.168.1.1"
     dns: ["8.8.8.8", "8.8.4.4"]
+    os_type: "linux"
+    template: "{{ vm_template }}"
+  
+  - name: "win-server-01"
+    cpu: 4
+    memory: 8192
+    disk_size: 80
+    network: "{{ vcenter_network }}"
+    ip: "192.168.1.102"
+    gateway: "192.168.1.1"
+    dns: ["8.8.8.8", "8.8.4.4"]
+    os_type: "windows"
+    template: "windows-2019-template"
+    admin_password: "{{ vault_windows_admin_password }}"
 
 # Terraform Configuration
 terraform_binary_path: "/usr/local/bin/terraform"
 terraform_workspace: "vsphere"
 terraform_state_backend: "local"
+
+# Windows Configuration
+windows_admin_user: "Administrator"
+winrm_port: 5986
+winrm_transport: "ssl"

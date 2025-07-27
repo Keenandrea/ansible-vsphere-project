@@ -4,4 +4,10 @@ collections:
     version: ">=3.0.0"
   - name: cloud.terraform
     version: ">=2.0.0"
+  - name: ansible.windows
+    version: ">=1.0.0"
+  - name: community.windows
+    version: ">=1.0.0"
+  - name: chocolatey.chocolatey
+    version: ">=1.0.0"
     

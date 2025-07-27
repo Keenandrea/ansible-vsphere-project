@@ -42,6 +42,7 @@ data "vsphere_virtual_machine" "template" {
 
 # Create VMs
 {% for vm in vms %}
+{% if vm.os_type == "linux" %}
 resource "vsphere_virtual_machine" "{{ vm.name | replace('-', '_') }}" {
   name             = "{{ vm.name }}"
   resource_pool_id = data.vsphere_compute_cluster.cluster.resource_pool_id
@@ -88,4 +89,80 @@ resource "vsphere_virtual_machine" "{{ vm.name | replace('-', '_') }}" {
   wait_for_guest_net_timeout = 300
   wait_for_guest_ip_timeout  = 300
 }
+{% elif vm.os_type == "windows" %}
+data "vsphere_virtual_machine" "windows_template_{{ loop.index }}" {
+  name          = "{{ vm.template }}"
+  datacenter_id = data.vsphere_datacenter.dc.id
+}
+
+resource "vsphere_virtual_machine" "{{ vm.name | replace('-', '_') }}" {
+  name             = "{{ vm.name }}"
+  resource_pool_id = data.vsphere_compute_cluster.cluster.resource_pool_id
+  datastore_id     = data.vsphere_datastore.datastore.id
+  folder           = var.vm_folder
+
+  num_cpus = {{ vm.cpu }}
+  memory   = {{ vm.memory }}
+  guest_id = data.vsphere_virtual_machine.windows_template_{{ loop.index }}.guest_id
+
+  scsi_type = data.vsphere_virtual_machine.windows_template_{{ loop.index }}.scsi_type
+
+  network_interface {
+    network_id   = data.vsphere_network.network.id
+    adapter_type = data.vsphere_virtual_machine.windows_template_{{ loop.index }}.network_interface_types[0]
+  }
+
+  disk {
+    label            = "disk0"
+    size             = {{ vm.disk_size }}
+    eagerly_scrub    = data.vsphere_virtual_machine.windows_template_{{ loop.index }}.disks.0.eagerly_scrub
+    thin_provisioned = data.vsphere_virtual_machine.windows_template_{{ loop.index }}.disks.0.thin_provisioned
+  }
+
+  clone {
+    template_uuid = data.vsphere_virtual_machine.windows_template_{{ loop.index }}.id
+
+    customize {
+      windows_options {
+        computer_name         = "{{ vm.name }}"
+        admin_password        = "{{ vm.admin_password }}"
+        auto_logon            = true
+        auto_logon_count      = 1
+        time_zone             = 85  # UTC
+        run_once_command_list = [
+          "powershell -ExecutionPolicy Bypass -File C:\\temp\\ConfigureWinRM.ps1"
+        ]
+      }
+
+      network_interface {
+        ipv4_address = "{{ vm.ip }}"
+        ipv4_netmask = 24
+      }
+
+      ipv4_gateway    = "{{ vm.gateway }}"
+      dns_server_list = {{ vm.dns | to_json }}
+    }
+  }
+
+  # Upload WinRM configuration script
+  provisioner "file" {
+    content = templatefile("${path.module}/scripts/ConfigureWinRM.ps1", {})
+    destination = "C:\\temp\\ConfigureWinRM.ps1"
+    
+    connection {
+      type     = "winrm"
+      user     = "Administrator"
+      password = "{{ vm.admin_password }}"
+      host     = self.default_ip_address
+      port     = 5985
+      https    = false
+      insecure = true
+      timeout  = "10m"
+    }
+  }
+
+  wait_for_guest_net_timeout = 600
+  wait_for_guest_ip_timeout  = 600
+}
+{% endif %}
 {% endfor %}

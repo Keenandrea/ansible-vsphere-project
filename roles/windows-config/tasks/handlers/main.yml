@@ -1,0 +1,9 @@
+---
+- name: restart winrm
+  win_service:
+    name: winrm
+    state: restarted
+
+- name: reboot windows
+  win_reboot:
+    reboot_timeout: 600

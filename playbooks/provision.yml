@@ -7,11 +7,26 @@
     - terraform
 
   post_tasks:
-    - name: Add provisioned VMs to inventory
+    - name: Add provisioned Linux VMs to inventory
       add_host:
         name: "{{ item.name }}"
         ansible_host: "{{ item.ip }}"
         ansible_user: ubuntu
         ansible_ssh_private_key_file: ~/.ssh/id_rsa
-        groups: vms
+        groups: vms,linux_vms
       loop: "{{ vms }}"
+      when: item.os_type == "linux"
+    
+    - name: Add provisioned Windows VMs to inventory
+      add_host:
+        name: "{{ item.name }}"
+        ansible_host: "{{ item.ip }}"
+        ansible_user: "{{ windows_admin_user }}"
+        ansible_password: "{{ item.admin_password }}"
+        ansible_connection: winrm
+        ansible_winrm_server_cert_validation: ignore
+        ansible_winrm_transport: "{{ winrm_transport }}"
+        ansible_port: "{{ winrm_port }}"
+        groups: vms,windows_vms
+      loop: "{{ vms }}"
+      when: item.os_type == "windows"

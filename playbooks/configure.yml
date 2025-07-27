@@ -1,8 +1,15 @@
 ---
-- name: Configure provisioned VMs
-  hosts: vms
+- name: Configure provisioned Linux VMs
+  hosts: linux_vms
   become: true
   gather_facts: true
   
   roles:
     - vm-config
+
+- name: Configure provisioned Windows VMs
+  hosts: windows_vms
+  gather_facts: true
+  
+  roles:
+    - windows-config
