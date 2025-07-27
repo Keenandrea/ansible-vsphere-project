@@ -1,0 +1,8 @@
+---
+- name: Configure provisioned VMs
+  hosts: vms
+  become: true
+  gather_facts: true
+  
+  roles:
+    - vm-config

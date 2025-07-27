@@ -1,0 +1,13 @@
+---
+- name: VMware vSphere Infrastructure Provisioning and Configuration
+  hosts: localhost
+  gather_facts: false
+  vars:
+    terraform_dir: "{{ playbook_dir }}/../terraform"
+  
+  tasks:
+    - name: Include provisioning playbook
+      import_playbook: provision.yml
+    
+    - name: Include configuration playbook
+      import_playbook: configure.yml
