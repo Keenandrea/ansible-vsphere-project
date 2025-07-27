@@ -1,0 +1,48 @@
+---
+- name: Ensure terraform directory exists
+  file:
+    path: "{{ terraform_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Generate Terraform configuration
+  template:
+    src: main.tf.j2
+    dest: "{{ terraform_dir }}/main.tf"
+    mode: '0644'
+  register: terraform_config
+
+- name: Generate Terraform variables file
+  template:
+    src: variables.tf.j2
+    dest: "{{ terraform_dir }}/variables.tf"
+    mode: '0644'
+
+- name: Generate terraform.tfvars
+  template:
+    src: terraform.tfvars.j2
+    dest: "{{ terraform_dir }}/terraform.tfvars"
+    mode: '0644'
+
+- name: Initialize Terraform
+  community.general.terraform:
+    project_path: "{{ terraform_dir }}"
+    state: present
+    force_init: true
+
+- name: Plan Terraform deployment
+  community.general.terraform:
+    project_path: "{{ terraform_dir }}"
+    state: planned
+    plan_file: terraform.plan
+
+- name: Apply Terraform configuration
+  community.general.terraform:
+    project_path: "{{ terraform_dir }}"
+    state: present
+    plan_file: terraform.plan
+  register: terraform_output
+
+- name: Display Terraform outputs
+  debug:
+    var: terraform_output.outputs

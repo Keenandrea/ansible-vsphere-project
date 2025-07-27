@@ -1,0 +1,53 @@
+variable "vsphere_user" {
+  description = "vSphere username"
+  type        = string
+  default     = "{{ vcenter_username }}"
+}
+
+variable "vsphere_password" {
+  description = "vSphere password"
+  type        = string
+  sensitive   = true
+}
+
+variable "vsphere_server" {
+  description = "vSphere server"
+  type        = string
+  default     = "{{ vcenter_hostname }}"
+}
+
+variable "datacenter" {
+  description = "Datacenter name"
+  type        = string
+  default     = "{{ vcenter_datacenter }}"
+}
+
+variable "cluster" {
+  description = "Cluster name"
+  type        = string
+  default     = "{{ vcenter_cluster }}"
+}
+
+variable "datastore" {
+  description = "Datastore name"
+  type        = string
+  default     = "{{ vcenter_datastore }}"
+}
+
+variable "network" {
+  description = "Network name"
+  type        = string
+  default     = "{{ vcenter_network }}"
+}
+
+variable "template" {
+  description = "Template name"
+  type        = string
+  default     = "{{ vm_template }}"
+}
+
+variable "vm_folder" {
+  description = "VM folder"
+  type        = string
+  default     = "{{ vm_folder }}"
+}

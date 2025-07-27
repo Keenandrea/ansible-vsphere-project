@@ -1,0 +1,60 @@
+---
+- name: Wait for SSH to be available
+  wait_for_connection:
+    delay: 30
+    timeout: 300
+
+- name: Update package cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_os_family == "Debian"
+
+- name: Install basic packages
+  package:
+    name:
+      - curl
+      - wget
+      - vim
+      - htop
+      - git
+      - python3
+      - python3-pip
+    state: present
+
+- name: Configure timezone
+  timezone:
+    name: UTC
+
+- name: Ensure SSH key directory exists
+  file:
+    path: /home/{{ ansible_user }}/.ssh
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0700'
+
+- name: Set up SSH authorized keys
+  authorized_key:
+    user: "{{ ansible_user }}"
+    state: present
+    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+- name: Configure firewall (UFW)
+  ufw:
+    state: enabled
+    rule: allow
+    port: "{{ item }}"
+  loop:
+    - "22"
+    - "80"
+    - "443"
+  when: ansible_os_family == "Debian"
+
+- name: Create application user
+  user:
+    name: appuser
+    shell: /bin/bash
+    create_home: yes
+    groups: sudo
+    append: yes
